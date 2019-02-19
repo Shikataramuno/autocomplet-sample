@@ -10,7 +10,7 @@
       <li class="autocomplete-result" v-for="(result, i) in results" :key="i"
         @click="setResult(result)"
         :class="{ 'is-active': i === arrowCounter }">
-        {{ result.value }}
+        {{ result }}
       </li>
     </ul>
   </div>
@@ -18,13 +18,12 @@
 
 <script lang="ts">
 import { Component, Prop, Emit, Watch, Vue } from 'vue-property-decorator';
-import OptionItem from '../models/OptionItem';
 
 @Component
 export default class AutoComplete extends Vue {
   // name: string = 'autocomplete';
   @Prop({default: ''}) option!: string;
-  @Prop({default: []}) options!: OptionItem[];
+  @Prop({default: []}) options!: string[];
   @Prop({default: true}) onChangeEvent!: boolean;
   $refs!: {
     'list': HTMLElement;
@@ -32,44 +31,39 @@ export default class AutoComplete extends Vue {
 
   search: string = '';
   isOpen: boolean = false;
-  results: OptionItem[] = [];
-  isLoading: boolean = false;
+  results: string[] = [];
   arrowCounter: number = -1;
 
-  get listsize(): number {
-    return this.results.length > 4 ? 4 : this.results.length;
-  }
-
-  @Emit('input')
-  onChange(): OptionItem {
+  onChange(): string {
     // Let's  our flat array
     console.log('onChange : ' + this.search);
     this.filterResults();
     console.log(this.results);
     this.isOpen = true;
-    return new OptionItem(this.search, this.search);
+    return this.search;
   }
 
   filterResults(): void {
     // first uncapitalize all the things
-    this.results = this.options.filter((item) => {
-      return item.value.indexOf(this.search) > -1;
+    this.results = this.options.filter((option) => {
+      return option.indexOf(this.search) > -1;
     });
     this.arrowCounter = -1;
   }
 
   @Emit('input')
-  setResult(result: OptionItem): OptionItem {
+  setResult(result: string): string {
+    console.log('setResult');
     this.isOpen = false;
     // Let's warn the parent that a change was made
-    this.search = result.value;
+    this.search = result;
     return result;
   }
 
   onArrowDown(): void {
     if (this.arrowCounter < this.results.length - 1) {
       this.arrowCounter = this.arrowCounter + 1;
-      const scrollTop = (this.arrowCounter - 3) * 32 + 8;
+      const scrollTop = (this.arrowCounter - 3) * 32;
       if (this.$refs.list.scrollTop < scrollTop) {
         this.$refs.list.scrollTop = scrollTop;
       }
@@ -86,20 +80,21 @@ export default class AutoComplete extends Vue {
   }
 
   @Emit('input')
-  onEnter(): OptionItem {
+  onEnter(): string {
     // console.log('this.arrowCounter : ' + this.arrowCounter)
+    console.log(`onEnter`);
     if (this.arrowCounter >= 0) {
       // Let's warn the parent that a change was made
-      this.search = this.results[this.arrowCounter].value;
+      const ret = this.results[this.arrowCounter];
       this.isOpen = false;
       this.arrowCounter = -1;
-      return this.results[this.arrowCounter];
-    } else if (this.search !== '') {
-      this.isOpen = false;
-      this.arrowCounter = -1;
-      return new OptionItem(this.search, this.search);
+      return ret;
     } else {
-      return new OptionItem('', '');
+      if (this.search !== '') {
+        this.isOpen = false;
+        this.arrowCounter = -1;
+      }
+      return this.search;
     }
   }
 
@@ -113,22 +108,22 @@ export default class AutoComplete extends Vue {
     }
   }
 
+/*
   @Watch('options', { immediate: true, deep: true })
-  onItemsChanged(newVal: OptionItem[], oldVal: OptionItem[]): void {
+  onItemsChanged(newVal: string[], oldVal: string[]): void {
     // actually compare them
     console.log(newVal);
     console.log(oldVal);
     if (oldVal && newVal.length !== oldVal.length) {
       this.results = newVal;
-      this.isLoading = false;
     }
   }
+*/
 
   @Watch('option')
   onOptionChanged(newVal: string, oldVal: string): void {
     this.search = newVal;
   }
-
   mounted(): void {
     // console.log('Autocomplete.mounted')
     this.search = this.option;
@@ -158,7 +153,7 @@ export default class AutoComplete extends Vue {
   padding: 0;
   margin: 0;
   border: 1px solid #eeeeee;
-  max-height: 120px;
+  max-height: 128px;
   overflow: auto;
   width: 100%;
   background-color: #FFFFFF;
@@ -166,7 +161,8 @@ export default class AutoComplete extends Vue {
 .autocomplete-result {
   list-style: none;
   text-align: left;
-  padding: 4px 2px;
+  height: 32px;
+  line-height: 32px;
   cursor: pointer;
 }
 .autocomplete-result.is-active{

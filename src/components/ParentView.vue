@@ -13,7 +13,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import Autocomplete from './Autocomplete.vue';
-import OptionItem from '../models/OptionItem';
 
 @Component({
   components: {
@@ -22,23 +21,30 @@ import OptionItem from '../models/OptionItem';
 })
 export default class ParentView extends Vue {
   name: string = 'ParentView';
-  options: OptionItem[] = [];
+  options: string[] = [];
   option: string = '';
 
-  optionSelected(option: OptionItem): void {
-    this.option = option.value;
+  optionSelected(option: string): void {
+    this.option = option;
   }
   created(): void {
     console.log('ParentView creates');
     this.options = [
-      new OptionItem('aaaa', 'aaaa'),
-      new OptionItem('aabb', 'aabb'),
-      new OptionItem('bbaa', 'bbaa'),
-      new OptionItem('cccc', 'cccc'),
-      new OptionItem('dddd', 'dddd'),
-      new OptionItem('ああああ', 'ああああ'),
-      new OptionItem('いいいい', 'いいいい'),
-      new OptionItem('ああいい', 'ああいい'),
+      'aaaa',
+      'aaab',
+      'aabb',
+      'abbb',
+      'bbbb',
+      'bbaa',
+      'cccc',
+      'dddd',
+      'ああああ',
+      'おおおお',
+      'あい～ん',
+      'あかーん',
+      'あおーい',
+      'あした',
+      'あさって',
     ];
   }
 }
